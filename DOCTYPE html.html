@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centro Administrativo Coprel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+            margin-top: 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        img {
+            display: block;
+            margin: 20px auto;
+            max-width: 100%;
+            height: auto;
+            max-height: 400px; /* Limita a altura da imagem */
+        }
+        .data-box {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            margin-top: 20px;
+            text-align: left; /* Alinha o texto à esquerda */
+        }
+        .data-box h2 {
+            color: #4CAF50;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        .data-box .data-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            white-space: nowrap; /* Impede a quebra de linha */
+        }
+        .data-box .data-row span {
+            font-weight: bold;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%; /* Garante que o texto não ultrapasse a caixa */
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Centro Administrativo Coprel</h1>
+    <div class="container">
+        <img src="file:///C:/Users/Moraes/Downloads/hidro.jpg" alt="Imagem do Hidrometro">
+        <div id="data"></div>
+        <button onclick="fetchHidrometroData()">Atualizar</button>
+    </div>
+
+    <script>
+        async function fetchHidrometroData() {
+            const url = "https://csm.copreltelecom.com.br:5000/api/hidrometro/694498e2e40f22f7";
+            try {
+                const response = await fetch(url);
+                const json = await response.json();
+
+                if (json.success && json.data.length > 0) {
+                    const data = json.data[0];
+
+                    // Obtém o valor de ent1 do JSON
+                    const ent1 = parseFloat(data.ent1) || 0;
+
+                    // Calcula m3hora com o valor de ent1
+                    const m3hora = ((113.16 + (ent1 - 1566) * 10) / 1000).toFixed(2);
+
+                    const tableHTML = `
+                        <div class="data-box">
+                            <h2>Dados do Hidrômetro</h2>
+                            <div class="data-row">
+                                <span>Leitura Acumulada Atual:</span><span>${m3hora}</span>
+                            </div>
+                            <div class="data-row">
+                                <span>Temperatura (°C):</span><span>${data.temperatura}</span>
+                            </div>
+                            <div class="data-row">
+                                <span>Bateria (V):</span><span>${data.bateria}</span>
+                            </div>
+                            <div class="data-row">
+                                <span>Última Transmissão:</span><span>${data.date_time}</span>
+                            </div>
+                            <div class="data-row">
+                                <span>Data de Ativação:</span><span>${data.data_ativacao}</span>
+                            </div>                         
+                        </div>`;
+
+                    document.getElementById("data").innerHTML = tableHTML;
+
+                    // Atualiza o título da página
+                    document.title = `Dados do Hidrômetro - Centro Administrativo Coprel - Atualizado`;
+                } else {
+                    document.getElementById("data").innerText = "Nenhum dado disponível.";
+                    document.title = "Dados do Hidrômetro - Centro Administrativo Coprel - Nenhum dado";
+                }
+            } catch (error) {
+                document.getElementById("data").innerText = "Erro ao buscar os dados: " + error.message;
+                document.title = "Dados do Hidrômetro - Centro Administrativo Coprel - Erro";
+            }
+        }
+
+        // Atualiza os dados a cada 1 minuto (60000 ms)
+        setInterval(fetchHidrometroData, 60000);
+
+        // Carrega os dados ao iniciar
+        fetchHidrometroData();
+    </script>
+</body>
+</html>
